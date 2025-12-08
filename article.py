@@ -1,13 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
 
+# TODO: implement hostname checker if needed to parse LSS. Use a separate function to figure out hostname or return an error.
 
 class Article:
 	def __init__(self):
 		self.title = ""
 		self.content = []
 
-	def get_title(self, url):
+	def get_title(self, url: str) -> str:
 
 		try:
 			request = requests.get(url)
@@ -22,7 +23,7 @@ class Article:
 		self.title = article_title_stripped
 		return self.title
 
-	def get_content(self, url):
+	def get_content(self, url: str) -> list:
 		
 		try:
 			request = requests.get(url)
