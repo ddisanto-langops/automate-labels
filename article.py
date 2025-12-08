@@ -39,9 +39,3 @@ class Article:
 			self.content.append(element_stripped)
 		
 		return self.content
-	
-URL = "https://www.thetrumpet.com/32823-cyprus-to-serve-as-a-bridge-for-the-eu-into-the-middle-east"
-
-chosen_article = Article()
-content = chosen_article.get_content(URL)
-print(content)
