@@ -9,6 +9,7 @@ class CrowdinComment:
         self.project_id = webhook['comment']['string']['project']['id']
         self.file_id = webhook['comment']['string']['file']['id']
         self.string_id = webhook['comment']['string']['id']
+        self.target_lang = webhook['comment']['targetLanguage']
     
     def extract_urls(self):
         pattern = re.compile(r'\bhttps://(?:[-\w.]|(?:%[\da-fA-F]{2}))+(?:[/\w .-]*)*/?[^\s.,;()]{0,20}?(?:\?[^\s]*)?(?:#[^\s]*)?')

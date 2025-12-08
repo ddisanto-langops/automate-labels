@@ -1,4 +1,8 @@
+os
 re
 bs4
+flask
+dotenv
 requests
+psycopg2
 crowdin-api-client

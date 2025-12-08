@@ -26,7 +26,7 @@ WEBHOOK = {
       "createdAt": "{{stringCreatedAt}}",
       "updatedAt": "{{stringUpdatedAt}}",
       "file": {
-        "id": "{{fileId}}",
+        "id": 7959,
         "name": "{{fileName}}",
         "title": "{{fileTitle}}",
         "type": "{{fileType}}",
@@ -37,7 +37,7 @@ WEBHOOK = {
         "directoryId": "{{directoryId}}"
       },
       "project": {
-        "id": "{{projectId}}",
+        "id": 680084,
         "userId": "{{projectUserId}}",
         "sourceLanguageId": "{{projectSourceLanguageId}}",
         "targetLanguageIds": "{{projectTargetLanguageIds}}",
@@ -55,7 +55,7 @@ WEBHOOK = {
       }
     },
     "targetLanguage": {
-      "id": "{{targetLanguageId}}",
+      "id": "fr",
       "name": "{{targetLanguageName}}",
       "editorCode": "{{targetLanguageEditorCode}}",
       "twoLettersCode": "{{targetLanguageTwoLettersCode}}",
