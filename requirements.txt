@@ -1,3 +1,4 @@
-requests
+re
 bs4
+requests
 crowdin-api-client
