@@ -1,12 +1,17 @@
-from crowdin_api import CrowdinClient
 import xml.etree.ElementTree as ET
 
 class XLIFF:
+    """
+    Class XLIFF represents a downloaded XLIFF file.
+    """
     def __init__(self, file_path: str):
         self.file_path = file_path
         self.contents = []
 
-    def load_xliff_contents(self):
+    def load_contents(self):
+        """        
+        Returns XLIFF contents as list of dicts: [{id:12345, source "text, etc."}]
+        """
         try:
             tree = ET.parse(self.file_path)
             root = tree.getroot()

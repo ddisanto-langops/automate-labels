@@ -2,17 +2,17 @@ WEBHOOK = {
   "event": "{{event}}",
   "comment": {
     "id": "{{commentId}}",
-    "text": "#label \nhttps://www.thetrumpet.com/32850-americas-new-military-strategy-make-europe-great-again \nhttps://www.thetrumpet.com/32836-russia-india-and-a-bromance-that-is-reshaping-the-world",
+    "text": "#label \nhttps://www.thetrumpet.com/31083-german-optics-firm-supplies-russia-with-military-grade-sights \nhttps://www.thetrumpet.com/32836-russia-india-and-a-bromance-that-is-reshaping-the-world",
     "type": "{{commentType}}",
     "issueType": "{{commentIssueType}}",
     "issueStatus": "{{commentIssueStatus}}",
     "resolvedAt": "{{commentResolvedAt}}",
     "createdAt": "{{commentCreatedAt}}",
     "string": {
-      "id": "{{stringId}}",
+      "id": 430052,
       "identifier": "{{stringIdentifier}}",
       "key": "{{stringKey}}",
-      "text": "{{stringText}}",
+      "text": "Germany&rsquo;s rift with Russia isn&rsquo;t as deep as many people assume.",
       "type": "{{stringType}}",
       "context": "{{stringContext}}",
       "maxLength": "{{stringMaxLength}}",
@@ -26,7 +26,7 @@ WEBHOOK = {
       "createdAt": "{{stringCreatedAt}}",
       "updatedAt": "{{stringUpdatedAt}}",
       "file": {
-        "id": 7959,
+        "id": 3888,
         "name": "{{fileName}}",
         "title": "{{fileTitle}}",
         "type": "{{fileType}}",
@@ -37,10 +37,10 @@ WEBHOOK = {
         "directoryId": "{{directoryId}}"
       },
       "project": {
-        "id": 680084,
+        "id": 693509,
         "userId": "{{projectUserId}}",
-        "sourceLanguageId": "{{projectSourceLanguageId}}",
-        "targetLanguageIds": "{{projectTargetLanguageIds}}",
+        "sourceLanguageId": "en",
+        "targetLanguageIds": "fr",
         "identifier": "{{projectIdentifier}}",
         "name": "{{projectName}}",
         "createdAt": "{{projectCreatedAt}}",
