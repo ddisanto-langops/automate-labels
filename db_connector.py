@@ -55,6 +55,7 @@ class DatabaseConnection:
             if results == []:
                 return None
             else:
+                results = [result[0] for result in results]
                 return results
         except sqlite3.Error as e:
             print(e)
