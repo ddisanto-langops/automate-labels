@@ -49,10 +49,12 @@ def label_request(webhook): # fix after local testing so it works with Flask
     scraper = Scraper()
     for url in urls:
         unsanitized_title = scraper.get_title(url)
-        scraper.get_content(url)
-        unsanitized_contents = scraper.get_segmented_content()
         article_title_sanitized = utils.sanitize_title(unsanitized_title)
         article_title_normalized = utils.normalize_text(article_title_sanitized)
+        
+        scraper.get_content(url)
+        unsanitized_contents = scraper.get_segmented_content()
+        
         article_contents = []
         for line in unsanitized_contents:
             line = utils.normalize_text(line)
@@ -60,7 +62,7 @@ def label_request(webhook): # fix after local testing so it works with Flask
         
         # add the title as a label to relevant Crowdin project
         add_label_req = crowdin_client.labels.add_label(
-            title= unsanitized_title,
+            title= article_title_sanitized,
             projectId= comment.project_id
             )
         label_id = add_label_req['data']['id']
@@ -80,9 +82,7 @@ def label_request(webhook): # fix after local testing so it works with Flask
 
             # See if a matching string is found
             # if so, add a label
-            # match = database.string_match(string_text)
             if results:
-                results = [result[0] for result in results]
                 if string_normalized in results or string_normalized == article_title_normalized:
                     crowdin_client.labels.assign_label_to_strings(
                         labelId= label_id,
