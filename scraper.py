@@ -1,42 +1,57 @@
 import requests
 from bs4 import BeautifulSoup
+import spacy
 
-# TODO: implement hostname checker if needed to parse LSS. Use a separate function to figure out hostname or return an error.
+# Load the spaCy English model (only once)
+nlp = spacy.load("en_core_web_sm", disable=["ner", "parser", "lemmatizer", "tagger"])
+if "sentencizer" not in nlp.pipe_names:
+    nlp.add_pipe("sentencizer")
 
 class Scraper:
-	def __init__(self):
-		self.title = ""
-		self.content = []
+    def __init__(self):
+        self.title = ""
+        self.content = []  # List of paragraphs
+        self.segmented_content = []  # List of sentences
 
-	def get_title(self, url: str) -> str:
+    def get_title(self, url: str) -> str:
+        try:
+            request = requests.get(url)
+            html_content = request.text
+        except requests.RequestException as e:
+            print(e)
+            return ""
+        soup = BeautifulSoup(html_content, 'html.parser')
+        article_title = soup.select_one("h1.heading-normal")
+        if article_title:
+            article_title_stripped = article_title.get_text(strip=True)
+            self.title = article_title_stripped
+        return self.title
 
-		try:
-			request = requests.get(url)
-			html_content = request.text
-		except requests.RequestException as e:
-			print(e)
+    def get_content(self, url: str) -> list:
+        try:
+            request = requests.get(url)
+            html_content = request.text
+        except requests.RequestException as e:
+            print(e)
+            return []
+        soup = BeautifulSoup(html_content, 'html.parser')
 
-		soup = BeautifulSoup(html_content, 'html.parser')
+        article_paragraph_elements = soup.select("div.wysiwyg.article-indent p")
+        self.content = []
+        self.segmented_content = []
 
-		article_title = soup.select_one("h1.heading-normal")
-		article_title_stripped = article_title.get_text(strip=True)
-		self.title = article_title_stripped
-		return self.title
+        for element in article_paragraph_elements:
+            element_stripped = element.get_text(strip=True)
+            self.content.append(element_stripped)
+            # Segment the paragraph into sentences using spaCy
+            doc = nlp(element_stripped)
+            sentences = [sent.text for sent in doc.sents]
+            self.segmented_content.extend(sentences)
 
-	def get_content(self, url: str) -> list:
-		
-		try:
-			request = requests.get(url)
-			html_content = request.text
-		except requests.RequestException as e:
-			print(e)
+        return self.content
 
-		soup = BeautifulSoup(html_content, 'html.parser')
-		
-		article_paragraph_elements = soup.select("div.wysiwyg.article-indent p")
-		
-		for element in article_paragraph_elements:
-			element_stripped = element.get_text(strip=True)
-			self.content.append(element_stripped)
-		
-		return self.content
+    def get_segmented_content(self) -> list:
+        """Returns the segmented content (list of sentences).
+        Must call get_content() first.
+        """
+        return self.segmented_content

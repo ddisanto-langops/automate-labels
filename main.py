@@ -6,6 +6,7 @@ from utils import *
 from webhook_example import *
 from flask import Flask, request, jsonify
 from crowdin_api import CrowdinClient
+from html import unescape
 
 
 utils = Utils()
@@ -48,7 +49,8 @@ def label_request(webhook): # fix after local testing so it works with Flask
     scraper = Scraper()
     for url in urls:
         unsanitized_title = scraper.get_title(url)
-        unsanitized_contents = scraper.get_content(url)
+        scraper.get_content(url)
+        unsanitized_contents = scraper.get_segmented_content()
         article_title_sanitized = utils.sanitize_title(unsanitized_title)
         article_title_normalized = utils.normalize_text(article_title_sanitized)
         article_contents = []
@@ -72,14 +74,16 @@ def label_request(webhook): # fix after local testing so it works with Flask
         # loop through strings of xliff file
         for string in xliff_contents:
             string_id = int(string['id'])
-            string_to_strip = utils.normalize_text(string['source'])
-            string_text = utils.strip_html_tags(string_to_strip)
+            string_unescaped = unescape(string['source'])
+            string_stripped = utils.strip_html_tags(string_unescaped)
+            string_normalized = utils.normalize_text(string_stripped)
 
             # See if a matching string is found
             # if so, add a label
             # match = database.string_match(string_text)
             if results:
-                if string_text in results or string_text == article_title_normalized:
+                results = [result[0] for result in results]
+                if string_normalized in results or string_normalized == article_title_normalized:
                     crowdin_client.labels.assign_label_to_strings(
                         labelId= label_id,
                         stringIds= [string_id],
