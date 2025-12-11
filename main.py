@@ -43,7 +43,10 @@ def label_request():
     """
 
     # Delete the temporary database when function is called
-    os.remove("./temp.db")
+    try:
+        os.remove("./temp.db")
+    except Exception:
+        print("temp.db not found.")
     
     # 1. Basic Request Validation
     if not request.json:
