@@ -1,0 +1,25 @@
+[Unit]
+Description=Gunicorn instance for the automate-labels web application
+After=network.target
+
+[Service]
+User=daniel_langops
+Group=www-data
+WorkingDirectory=/home/daniel_langops/automate-labels
+
+# The ExecStart command is updated to use 'source ... && gunicorn' for robustness,
+# FIX: Replaced the 'bash -c source ... gunicorn' command with the absolute path
+# to the Gunicorn executable inside the virtual environment to resolve "command not found" error.
+# FIX: Updated the application entry point from app:app to main:app as requested.
+ExecStart=/home/daniel_langops/automate-labels/labeler-venv/bin/gunicorn --workers 4 --bind 0.0.0.0:5000 main:app
+
+Restart=always
+RestartSec=3
+
+# --- CRITICAL CHANGE FOR LOGGING ---
+# These lines ensure that standard output and error are directed to the Systemd journal.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
