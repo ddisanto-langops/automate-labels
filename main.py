@@ -41,6 +41,9 @@ def label_request():
     Processes the request to add labels based on comments containing "#label".
     Always returns a 200 OK status.
     """
+
+    # Delete the temporary database when function is called
+    os.remove("./temp.db")
     
     # 1. Basic Request Validation
     if not request.json:
