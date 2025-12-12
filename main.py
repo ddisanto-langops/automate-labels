@@ -4,8 +4,6 @@ from crowdin_api.exceptions import ValidationError
 from html import unescape
 import os
 import logging 
-
-# Import local modules (stubs provided below for completeness)
 from scraper import Scraper
 from comment import CrowdinComment
 from xliff import XLIFF
