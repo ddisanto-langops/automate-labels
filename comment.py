@@ -7,7 +7,7 @@ class CrowdinComment:
     def __init__(self, webhook):
         self.text = webhook['comment']['text']
         self.project_id = webhook['comment']['string']['project']['id']
-        self.file_id = webhook['comment']['string']['file']['id']
+        self.file_id = int(webhook['comment']['string']['file']['id'])
         self.string_id = webhook['comment']['string']['id']
         self.target_lang_id = webhook['comment']['targetLanguage']['id']
     
