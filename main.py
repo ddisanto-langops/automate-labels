@@ -129,8 +129,7 @@ def label_request():
             article_title_normalized = utils.normalize_text(article_title_sanitized)
             
             # Scrape and process content
-            scraper.get_content(url)
-            unsanitized_contents = scraper.get_segmented_content()
+            unsanitized_contents = scraper.get_segmented_content(url)
             
             article_contents = []
             for line in unsanitized_contents:
