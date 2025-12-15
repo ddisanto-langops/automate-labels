@@ -2,17 +2,17 @@
 Eliminate the need to manually label PT strings with their corresponding article title in inDesign files. We expect to save between 30 minutes to 1 hour in manual work. 
 
 # Method
-This will be the first app set up on the langops-ca server. It will allow for strings in any .IDML file to automatically be labeled according to the articles contained in the magazine. The current implementation uses a web scraper to populate a database with article title and strings. A comparison is then made between the XLIFF strings and the database. Matches which exceed a given threshold are labeled with the corresponding article title via the Crowdin API.
+This will be the first app set up on the langops-ca server. It will allow for strings in any .idml file to automatically be labeled according to the articles contained in the magazine. The current implementation uses a web scraper to populate a database with article title and strings. A comparison is then made between the XLIFF strings and the database. Matches which exceed a given threshold are labeled with the corresponding article title via the Crowdin API.
 
 # Deployment
-It is necessary to run deploy_setup.sh to create the virtual environment, install Python packages and their dependencies.
+Deployment on Ubuntu can be accelerated via run deploy_setup.sh, which automatically creates a virtual environment and installs Python packages and their dependencies. Gunicorn service file and Nginx config must be manually added according to the server's individual requirements.
 
 # Usage
 The end user must create and post a comment, with the text '#label' and all URLs of articles to be labeled.
 
 # Parameters
 **Similarity threshold:** *An integer representing the minimum similarity percentage can be set inside main.py (not currently accessible to end-users).*  
-**Article URLs** *The end-user must insert all URLS of the desired articles.*
+**Article URLs** *The end-user must insert all URLs of the desired articles.*
 
 # Known Issues
 **False positives:** *The default similarity threshold of 50 may be a little bit greedy.*  
