@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from crowdin_api import CrowdinClient
 from crowdin_api.exceptions import ValidationError
 from html import unescape
+from fuzzy_match import get_similarity
 import os
 import logging 
 from scraper import Scraper
@@ -11,7 +12,7 @@ from db_connector import DatabaseConnection
 from utils import Utils
 
 # --- Setup and Initialization ---
-
+SIMILARITY_THRESHOLD = 50
 # Initialize Flask application
 app = Flask(__name__)
 
@@ -119,24 +120,23 @@ def label_request():
         
         database = DatabaseConnection()
         scraper = Scraper()
-        
+
         for url in urls:
             logging.info(f"Processing URL: {url}")
             
-            # Scrape and sanitize title
+            # Scrape, sanitize and normalize title
             unsanitized_title = scraper.get_title(url)
             article_title_sanitized = utils.sanitize_title(unsanitized_title)
             article_title_normalized = utils.normalize_text(article_title_sanitized)
             
-            # Scrape and process content
+            # Scrape and normalize content
             unsanitized_contents = scraper.get_segmented_content(url)
-            
             article_contents = []
             for line in unsanitized_contents:
                 line = utils.normalize_text(line)
                 article_contents.append(line)
             
-            # 7. Add the title as a label to relevant Crowdin project
+            # Add the title as a label to relevant Crowdin project
             add_label_req = crowdin_client.labels.add_label(
                 title=article_title_sanitized,
                 projectId=comment.project_id
@@ -144,28 +144,40 @@ def label_request():
             label_id = add_label_req['data']['id']
             logging.info(f"Created new label with ID: {label_id} and Title: {article_title_sanitized}")
 
-            # 8. Insert title with strings into linked database
-            database.insert_data(article_title_normalized, article_contents)
-            
-            # 9. For the current title, retrieve all the strings
-            results = database.retreive_strings(article_title_normalized)
-            
-            # 10. Loop through strings of xliff file and assign label
-            for string in xliff_contents:
-                string_id = int(string['id'])
-                string_unescaped = unescape(string['source'])
-                string_stripped = utils.strip_html_tags(string_unescaped)
-                string_normalized = utils.normalize_text(string_stripped)
+            # Insert title with strings into linked database
+            database.insert_data(article_title_normalized, article_contents, label_id)
+                  
+        
+        for string in xliff_contents:
 
-                # See if a matching string is found
-                if results and (string_normalized in results or string_normalized == article_title_normalized):
+            # Get id, then clean up the string
+            string_id = int(string['id'])
+            string_unescaped = unescape(string['source'])
+            string_stripped = utils.strip_html_tags(string_unescaped)
+            string_normalized = utils.normalize_text(string_stripped)
+
+            # If string matches one of the article titles, label it
+            if string_normalized == article_title_normalized:
+                crowdin_client.labels.assign_label_to_strings(
+                    labelId=label_id,
+                    stringIds=[string_id],
+                    projectId=comment.project_id
+                )
+                logging.info(f"Assigned label {label_id} to string ID: {string_id}")
+                continue
+            elif string_normalized != article_title_normalized:
+                # Compare and get similarity
+                comparison = database.retreive_most_similar(50, string_normalized)
+                if comparison['similarity'] >= SIMILARITY_THRESHOLD:
                     crowdin_client.labels.assign_label_to_strings(
-                        labelId=label_id,
-                        stringIds=[string_id],
-                        projectId=comment.project_id
-                    )
-                    logging.info(f"Assigned label {label_id} to string ID: {string_id}")
-                    
+                    labelId=label_id,
+                    stringIds=[string_id],
+                    projectId=comment.project_id
+                )
+                logging.info(f"Assigned label {label_id} to string ID: {string_id}")
+            else:
+                logging.info("No match found. Continuing...")    
+
     except Exception as e:
         # Log the full exception and traceback for debugging
         logging.error(f"An error occurred during processing: {e}", exc_info=True)
@@ -174,8 +186,6 @@ def label_request():
     logging.info("--- Webhook processing complete. Returning 200 OK. ---")
     return jsonify({}), 200
 
-# Recommended: For development purposes only. 
-# For production, use a WSGI server like Gunicorn/Waitress.
+
 if __name__ == "__main__":
-    # Use 127.0.0.1 for local testing, 0.0.0.0 for public access (make sure your firewall is configured)
     app.run(host="0.0.0.0", port=5002)
