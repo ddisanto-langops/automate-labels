@@ -1,18 +1,18 @@
+import os
+import logging
+from html import unescape
 from flask import Flask, request, jsonify
 from crowdin_api import CrowdinClient
 from crowdin_api.exceptions import ValidationError
-from html import unescape
-from fuzzy_match import get_similarity
-import os
-import logging 
 from scraper import Scraper
 from comment import CrowdinComment
 from xliff import XLIFF
-from db_connector import DatabaseConnection
+from db_connector import DBConnection
 from utils import Utils
 
 # --- Setup and Initialization ---
 SIMILARITY_THRESHOLD = 50
+
 # Initialize Flask application
 app = Flask(__name__)
 
@@ -20,18 +20,13 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Initialize the Utils class for common operations
-utils = Utils() 
+utils = Utils()
 
-# WARNING: It is strongly recommended to use environment variables 
-# instead of a local function call to retrieve secrets in production.
-# For this example, we rely on the implementation in utils.py.
-TOKEN = utils.get_secret("CROWDIN_API_KEY") 
-# Check if token is available
+TOKEN = os.environ.get("CROWDIN_API_KEY")
 if not TOKEN:
     logging.warning("CROWDIN_API_KEY not set. Crowdin client will fail.")
 
-# Initialize Crowdin Client
-# Note: CrowdinClient initialization must occur only if TOKEN is available.
+# Initialize Crowdin Client if TOKEN is available
 try:
     crowdin_client = CrowdinClient(token=TOKEN)
 except Exception as e:
@@ -79,14 +74,14 @@ def label_request():
         
         logging.info("Processing request with #label...")
 
-        # --- DIAGNOSTIC LOGGING ADDED HERE ---
+        # --- DIAGNOSTIC LOGGING ---
         logging.info(f"Attempting Crowdin Export with:")
         logging.info(f"  Target Language ID: {comment.target_lang_id}")
         logging.info(f"  Project ID: {comment.project_id}")
         logging.info(f"  File ID: {comment.file_id}")
         # -------------------------------------
 
-        # 4. Export and download the relevant file from Crowdin as XLIFF
+        # Export and download the relevant file from Crowdin as XLIFF
         if not crowdin_client:
              logging.error("Crowdin Client not initialized. Cannot perform API calls.")
              # Still return 200 OK since the webhook was received
@@ -100,7 +95,6 @@ def label_request():
                 fileIds=[comment.file_id]
             )
         except ValidationError as ve:
-            # Catch the specific 400 error (ValidationError) and log detailed info
             logging.error(f"Crowdin API ValidationError during Build/Export (HTTP 400): {ve.message}")
             logging.error(f"Full Validation Error details (This is the JSON structure): {ve.errors}")
             logging.info("--- Webhook processing terminated due to Crowdin API ValidationError. ---")
@@ -111,14 +105,15 @@ def label_request():
         utils.download_file(url, download_path)
         logging.info(f"Downloaded XLIFF file to {download_path}")
 
-        # 5. XLIFF object and contents
+        # Get contents of XLIFF file
         xliff = XLIFF(download_path)
         xliff_contents = xliff.load_contents()
 
-        # 6. Get the URLs in the comment
+        # Get the URLs in the comment
         urls = comment.extract_urls()
-        
-        database = DatabaseConnection()
+
+        # Init database connection and webscraper to provide data
+        database = DBConnection()
         scraper = Scraper()
 
         for url in urls:
