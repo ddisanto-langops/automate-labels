@@ -6,6 +6,7 @@ After=network.target
 User=daniel_langops
 Group=www-data
 WorkingDirectory=/home/daniel_langops/automate-labels
+EnvironmentFile=/etc/automate-labels/secrets.env
 Environment="PATH=/home/daniel_langops/automate-labels/labeler-venv/bin"
 ExecStart=/home/daniel_langops/automate-labels/labeler-venv/bin/gunicorn --workers 3 --bind unix:/tmp/automate-labels.sock -m 007 wsgi:app
 Restart=always
