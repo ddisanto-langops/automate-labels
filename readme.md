@@ -11,9 +11,9 @@ It is necessary to run deploy_setup.sh to create the virtual environment, instal
 The end user must create and post a comment, with the text '#label' and all URLs of articles to be labeled.
 
 # Parameters
-**Similarity threshold:** *for string matching can be set inside main.py (not currently accessible to end-users). A setting of 50, the default, seems to be a little bit greedy (some false positives).*
+**Similarity threshold:** *for string matching can be set inside main.py (not currently accessible to end-users). A setting of 50, the default, seems to be a little bit greedy (some false positives).*  
 **Article URLs** *The end-user must insert all URLS of the desired articles.*
 
 # Known Issues
-**Matching will never be perfect:** *inDesign files contain strings not belonging to any article (e.g. table of contents ). These will still need manual classification; at best, they can be labeled as unclassified if desired.*
+**Matching will never be perfect:** *inDesign files contain strings not belonging to any article (e.g. table of contents ). These will still need manual classification; at best, they can be labeled as unclassified if desired.*  
 **Labeling RV articles:** *Need to determine authentication/access*
