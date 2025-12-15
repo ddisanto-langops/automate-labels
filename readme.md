@@ -15,6 +15,6 @@ The end user must create and post a comment, with the text '#label' and all URLs
 **Article URLs** *The end-user must insert all URLS of the desired articles.*
 
 # Known Issues
-**False positives:** *The default similarity threshold of 50 may be a little bit greedy.*
+**False positives:** *The default similarity threshold of 50 may be a little bit greedy.*  
 **Matching will never be perfect:** *inDesign files contain strings not belonging to any article (e.g. table of contents ). These will still need manual classification; at best, they can be labeled as unclassified if desired.*  
 **Labeling RV articles:** *Need to determine authentication/access*
