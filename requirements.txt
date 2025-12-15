@@ -3,4 +3,5 @@ spacy
 flask
 dotenv
 requests
+rapidfuzz
 crowdin-api-client
