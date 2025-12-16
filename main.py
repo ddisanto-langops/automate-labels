@@ -11,7 +11,7 @@ from db_connector import DBConnection
 from utils import Utils
 
 # --- Setup and Initialization ---
-SIMILARITY_THRESHOLD = 50
+SIMILARITY_THRESHOLD = 70
 
 # Initialize Flask application
 app = Flask(__name__)
