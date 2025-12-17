@@ -1,8 +1,7 @@
 import os
 from crowdin_api import CrowdinClient
 
-crowdin_client = CrowdinClient(token="089303ac7303cc370f40dd38ef1b4e75cd4850842d87181cb5b23eb0f370d90d089c9c5410065356")
-# crowdin_client = CrowdinClient(token=os.environ.get("CROWDIN_API_KEY"))
+crowdin_client = CrowdinClient(token=os.environ.get("CROWDIN_API_KEY"))
 
 class CrowdinLabels:
     """
@@ -52,8 +51,3 @@ class CrowdinLabels:
             return True
         else:
             return False
-
-labels = CrowdinLabels(680084)
-ids = labels.get_label_ids()
-print(ids)
-print(ids.index(487))
