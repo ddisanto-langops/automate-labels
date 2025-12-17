@@ -162,13 +162,15 @@ def label_request():
             string_normalized = utils.normalize_text(string_stripped)
            
             comparison = database.retreive_most_similar(50, string_normalized)
-            if comparison['similarity'] >= SIMILARITY_THRESHOLD:
+            comparison_similarity = comparison["similarity"]
+            comparison_labelId = comparison["label_id"]
+            if comparison_similarity >= SIMILARITY_THRESHOLD:
                 crowdin_client.labels.assign_label_to_strings(
-                labelId=comparison['label_id'],
+                labelId=comparison_labelId,
                 stringIds=[string_id],
                 projectId=comment.project_id
             )
-                logging.info(f"Assigned label {label_id} to string ID: {string_id}")
+                logging.info(f"Assigned label {comparison_labelId} to string ID: {string_id}")
             
             else:
                 logging.info("No match found. Continuing...")    
