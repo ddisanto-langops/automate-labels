@@ -130,21 +130,17 @@ def label_request():
 
             # Check for existing label. Use if exists:
             existing_labels = list_labels(comment.project_id)
-            label_id = None
-            for title in existing_labels.items():
-                if article_title_sanitized == title:
-                    logging.error(f"Error: Label with this title already exists. Exiting.")
-                    return jsonify({"message": "Label exists."}), 200
-                    
-            
-            # Else, add the title as a label to relevant Crowdin project:
-            if label_id == None:
-                    add_label_req = crowdin_client.labels.add_label(
-                    title=article_title_sanitized,
-                    projectId=comment.project_id
-                    )
-                    label_id = add_label_req['data']['id']
-                    logging.info(f"Created new label with ID: {label_id} and Title: {article_title_sanitized}")
+            if article_title_sanitized in existing_labels:
+                logging.error(f"Error: Label with this title already exists. Exiting.")
+                return jsonify({"message": "Label exists."}), 200
+            else:   
+                # Add the title as a label to relevant Crowdin project:
+                add_label_req = crowdin_client.labels.add_label(
+                title=article_title_sanitized,
+                projectId=comment.project_id
+                )
+                label_id = add_label_req['data']['id']
+                logging.info(f"Created new label with ID: {label_id} and Title: {article_title_sanitized}")
             
             # Scrape and normalize content
             unsanitized_contents = scraper.get_segmented_content(url)
