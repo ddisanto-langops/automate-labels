@@ -178,6 +178,12 @@ def label_request():
     except Exception as e:
         # Log the full exception and traceback for debugging
         logging.error(f"An error occurred during processing: {e}", exc_info=True)
+    
+    try:
+        if database:
+            database.close_connection()
+    except Exception as e:
+        logging.info("Failed to close database.")
         
     # CRITICAL: Always return a Flask Response object, even on success/error in processing
     logging.info("--- Webhook processing complete. Returning 200 OK. ---")
