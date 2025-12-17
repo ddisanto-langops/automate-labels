@@ -66,11 +66,13 @@ def label_request():
             
         comment = CrowdinComment(webhook)
 
-        # 3. Check for Label Operation Request
+        # Check for label request
         if "#label" not in comment.text:
             logging.info(f"Comment received, but '#label' not found. Skipping processing.")
             # Successfully received the webhook, so return 200 OK immediately
             return jsonify({"message": "OK, skipped processing (no #label found)"}), 200
+        else:
+            logging.info(f"Request received from user: {webhook['comment']['user']['fullName']} (username {webhook['comment']['user']['username']})")
         
         logging.info("Processing request with #label...")
 

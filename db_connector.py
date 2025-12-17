@@ -3,9 +3,9 @@ import sqlite3
 from rapidfuzz import fuzz
 from fuzzy_match import get_similarity
 
-class DatabaseConnection:
+class DBConnection:
     """
-    Class DatabaseConnection represents a connection to a local sqlite database.
+    Class DBConnection represents a connection to a local sqlite database.
     """
     def __init__(self):
         try:
