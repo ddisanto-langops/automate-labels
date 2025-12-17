@@ -3,7 +3,7 @@ import logging
 from html import unescape
 from flask import Flask, request, jsonify
 from crowdin_api import CrowdinClient
-from labels import list_labels
+from labels import CrowdinLabels
 from crowdin_api.exceptions import ValidationError
 from scraper import Scraper
 from webhook import StringCommentWebhook
@@ -120,17 +120,40 @@ def label_request():
         # Init webscraper to provide data
         scraper = Scraper()
 
+        # Make a request to list existing labels via CrowdinLabels
+        crowdin_labels = CrowdinLabels(comment.project_id)
+
         for url in urls:
             logging.info(f"Processing URL: {url}")
+
+
+            # Check for label 'Uncategorized' and create if needed
+            # if exists, get its ID
+            current_label_titles = crowdin_labels.get_label_titles()
+            current_label_ids = crowdin_labels.get_label_ids()
+            uncategorized_exists = crowdin_labels.check_for_uncategorized(current_label_titles)
             
+            # get its ID and store as uncategorized_label_id
+            if uncategorized_exists == True:
+                label_index = current_label_titles.index("Uncategorized")
+                uncategorized_id = current_label_ids[label_index]
+
+            else:
+                # create it
+                add_uncategorized = crowdin_client.labels.add_label(
+                    title="Uncategorized",
+                    projectId=comment.project_id
+                )
+                uncategorized_id = add_uncategorized['data']['id']
+
+
             # Scrape, sanitize and normalize title
             unsanitized_title = scraper.get_title(url)
             article_title_sanitized = utils.sanitize_title(unsanitized_title)
             article_title_normalized = utils.normalize_text(article_title_sanitized)
 
             # Check for existing label. Crowdin cannot apply the same label to strings more than once, so exit with error.
-            existing_labels = list_labels(comment.project_id)
-            if article_title_sanitized in existing_labels:
+            if article_title_sanitized in current_label_titles:
                 logging.error(f"Error: Label with this title already exists. Exiting.")
                 return jsonify({"message": "Label exists."}), 200
             else:   
@@ -173,7 +196,7 @@ def label_request():
                 logging.info(f"Assigned label {comparison_labelId} to string ID: {string_id}")
             
             else:
-                logging.info("No match found. Continuing...")    
+                logging.info("No match found. Continuing...") 
 
     except Exception as e:
         # Log the full exception and traceback for debugging
