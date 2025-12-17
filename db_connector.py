@@ -82,9 +82,3 @@ class DBConnection:
         if self.CONNECTION:
             self.CONNECTION.close()
         print("Connection closed")
-
-
-my_db = DBConnection()
-my_db.insert_data("title",["string1", "string2", "string3"],4151)
-sims = my_db.retreive_most_similar(70,"strin2")
-print(sims)
