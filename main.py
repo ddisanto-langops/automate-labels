@@ -47,9 +47,10 @@ def label_request():
 
     # Delete the temporary database when function is called
     try:
-        os.remove("./temp.db")
+        database = DBConnection()
     except Exception:
-        logging.info("temp.db not found.")
+        logging.error("Failed to connect to in-memory database.")
+        return jsonify({"message": "Failed to connect to in-memory database"}), 200
     
     # Check for JSON payload
     if not request.json:
@@ -116,8 +117,7 @@ def label_request():
         # Get the URLs in the comment
         urls = utils.extract_urls(comment.text)
 
-        # Init database connection and webscraper to provide data
-        database = DBConnection()
+        # Init webscraper to provide data
         scraper = Scraper()
 
         for url in urls:
@@ -161,7 +161,7 @@ def label_request():
             string_stripped = utils.strip_html_tags(string_unescaped)
             string_normalized = utils.normalize_text(string_stripped)
            
-            comparison = database.retreive_most_similar(50, string_normalized)
+            comparison = database.retreive_most_similar(SIMILARITY_THRESHOLD, string_normalized)
             comparison_similarity = comparison["similarity"]
             comparison_labelId = comparison["label_id"]
             if comparison_similarity >= SIMILARITY_THRESHOLD:
