@@ -3,9 +3,10 @@ import logging
 from html import unescape
 from flask import Flask, request, jsonify
 from crowdin_api import CrowdinClient
+from labels import list_labels
 from crowdin_api.exceptions import ValidationError
 from scraper import Scraper
-from comment import CrowdinComment
+from webhook import StringCommentWebhook
 from xliff import XLIFF
 from db_connector import DBConnection
 from utils import Utils
@@ -42,7 +43,6 @@ def label_request():
     Always returns a 200 OK status.
     """
     
-    # 1. Logging the start of the request
     logging.info("--- New Webhook Received ---") 
 
     # Delete the temporary database when function is called
@@ -51,7 +51,7 @@ def label_request():
     except Exception:
         logging.info("temp.db not found.")
     
-    # 2. Basic Request Validation
+    # Check for JSON payload
     if not request.json:
         logging.error("Received request with no JSON payload.")
         return jsonify({"message": "Invalid request: Must be JSON"}), 400
@@ -63,8 +63,11 @@ def label_request():
         if webhook is None:
             logging.error("JSON payload is None after get_json(). Check Content-Type header.")
             return jsonify({"message": "JSON payload is null"}), 400
-            
-        comment = CrowdinComment(webhook)
+
+        # init the string comment class and read data from webhook    
+        comment = StringCommentWebhook()
+        comment.read(webhook)
+
 
         # Check for label request
         if "#label" not in comment.text:
@@ -72,7 +75,7 @@ def label_request():
             # Successfully received the webhook, so return 200 OK immediately
             return jsonify({"message": "OK, skipped processing (no #label found)"}), 200
         else:
-            logging.info(f"Request received from user: {webhook['comment']['user']['fullName']} (username {webhook['comment']['user']['username']})")
+            logging.info(f"Request received from user: {comment.full_name} (user {comment.username}))")
         
         logging.info("Processing request with #label...")
 
@@ -97,13 +100,12 @@ def label_request():
                 fileIds=[comment.file_id]
             )
         except ValidationError as ve:
-            logging.error(f"Crowdin API ValidationError during Build/Export (HTTP 400): {ve.message}")
-            logging.error(f"Full Validation Error details (This is the JSON structure): {ve.errors}")
+            logging.error(f"Validation Error details: {ve.detail}")
             logging.info("--- Webhook processing terminated due to Crowdin API ValidationError. ---")
             return jsonify({"message": "Crowdin API failed during file build/export (Check server logs)."}), 200
         
         url = export_file['data']['url']
-        download_path = os.path.join(os.getcwd(), "temp.xliff") # Use os.path for portability
+        download_path = os.path.join(os.getcwd(), "temp.xliff")
         utils.download_file(url, download_path)
         logging.info(f"Downloaded XLIFF file to {download_path}")
 
@@ -112,7 +114,7 @@ def label_request():
         xliff_contents = xliff.load_contents()
 
         # Get the URLs in the comment
-        urls = comment.extract_urls()
+        urls = utils.extract_urls(comment.text)
 
         # Init database connection and webscraper to provide data
         database = DBConnection()
@@ -125,6 +127,23 @@ def label_request():
             unsanitized_title = scraper.get_title(url)
             article_title_sanitized = utils.sanitize_title(unsanitized_title)
             article_title_normalized = utils.normalize_text(article_title_sanitized)
+
+            # Check for existing label. Use if exists:
+            existing_labels = list_labels(comment.project_id)
+            label_id = None
+            for title, id in existing_labels.items():
+                if article_title_normalized == title:
+                    logging.info(f"Using existing label: {title}")
+                    label_id = id
+            
+            # Else, add the title as a label to relevant Crowdin project:
+            if label_id == None:
+                    add_label_req = crowdin_client.labels.add_label(
+                    title=article_title_sanitized,
+                    projectId=comment.project_id
+                    )
+                    label_id = add_label_req['data']['id']
+                    logging.info(f"Created new label with ID: {label_id} and Title: {article_title_sanitized}")
             
             # Scrape and normalize content
             unsanitized_contents = scraper.get_segmented_content(url)
@@ -132,14 +151,6 @@ def label_request():
             for line in unsanitized_contents:
                 line = utils.normalize_text(line)
                 article_contents.append(line)
-            
-            # Add the title as a label to relevant Crowdin project
-            add_label_req = crowdin_client.labels.add_label(
-                title=article_title_sanitized,
-                projectId=comment.project_id
-            )
-            label_id = add_label_req['data']['id']
-            logging.info(f"Created new label with ID: {label_id} and Title: {article_title_sanitized}")
 
             # Insert title with strings into linked database
             database.insert_data(article_title_normalized, article_contents, label_id)

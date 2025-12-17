@@ -1,6 +1,4 @@
 import requests
-from dotenv import load_dotenv
-import os
 import re
 from bs4 import BeautifulSoup
 import string
@@ -9,15 +7,6 @@ class Utils:
 	def __init__(self):
 		pass
 	 
-	def get_secret(self, key_name: str):
-		try:
-			load_dotenv("./secrets.env")
-			KEY = os.getenv(f"{key_name}")
-			return KEY
-		
-		except KeyError as e:
-			print("Key not found. Check key name and path to .env file.")
-	
 
 	def download_file(self, url: str, download_path: str):
 		request_data = requests.get(url)
@@ -71,4 +60,14 @@ class Utils:
 		"""
 		soup = BeautifulSoup(html_string, "html.parser")
 		return soup.get_text(separator=" ", strip=True)
+	
+
+	def extract_urls(self, text) -> list:
+		pattern = re.compile(r'\bhttps://(?:[-\w.]|(?:%[\da-fA-F]{2}))+(?:[/\w .-]*)*/?[^\s.,;()]{0,20}?(?:\?[^\s]*)?(?:#[^\s]*)?')
+		urls = re.findall(
+			pattern= pattern,
+			string= text
+		)
+
+		return urls
 

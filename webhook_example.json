@@ -1,4 +1,4 @@
-WEBHOOK = {
+{
   "event": "{{event}}",
   "comment": {
     "id": "{{commentId}}",
