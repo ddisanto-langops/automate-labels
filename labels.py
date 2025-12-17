@@ -1,7 +1,7 @@
 import os
 from crowdin_api import CrowdinClient
 
-crowdin_client = CrowdinClient(token=os.environ.get("CROWDIN_API_TOKEN"))
+crowdin_client = CrowdinClient(token=os.environ.get("CROWDIN_API_KEY"))
 
 def list_labels(project_id):
     label_ids = []

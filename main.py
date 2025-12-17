@@ -131,10 +131,11 @@ def label_request():
             # Check for existing label. Use if exists:
             existing_labels = list_labels(comment.project_id)
             label_id = None
-            for title, id in existing_labels.items():
-                if article_title_normalized == title:
-                    logging.info(f"Using existing label: {title}")
-                    label_id = id
+            for title in existing_labels.items():
+                if article_title_sanitized == title:
+                    logging.error(f"Error: Label with this title already exists. Exiting.")
+                    return jsonify({"message": "Label exists."}), 200
+                    
             
             # Else, add the title as a label to relevant Crowdin project:
             if label_id == None:

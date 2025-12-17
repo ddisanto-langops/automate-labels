@@ -1,6 +1,5 @@
 import os
 import sqlite3
-from rapidfuzz import fuzz
 from fuzzy_match import get_similarity
 
 class DBConnection:
