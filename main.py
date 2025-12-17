@@ -128,7 +128,7 @@ def label_request():
             article_title_sanitized = utils.sanitize_title(unsanitized_title)
             article_title_normalized = utils.normalize_text(article_title_sanitized)
 
-            # Check for existing label. Use if exists:
+            # Check for existing label. Crowdin cannot apply the same label to strings more than once, so exit with error.
             existing_labels = list_labels(comment.project_id)
             if article_title_sanitized in existing_labels:
                 logging.error(f"Error: Label with this title already exists. Exiting.")
