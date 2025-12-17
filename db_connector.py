@@ -9,11 +9,10 @@ class DBConnection:
     def __init__(self):
         try:
             self.APP_FOLDER = os.path.dirname(os.path.abspath(__file__)) # Gets the directory of the current script
-            self.DB_FILE = os.path.join(self.APP_FOLDER, 'temp.db')
-            self.CONNECTION = sqlite3.connect(self.DB_FILE)
+            self.CONNECTION = sqlite3.connect(":memory:")
             self.CONNECTION.row_factory = sqlite3.Row
             self.CURSOR = self.CONNECTION.cursor()
-            print(f"✅ Connected to SQLite database file: {self.DB_FILE}")
+            print(f"✅ Connected to SQLite database file: {self.CONNECTION}")
 
         except sqlite3.Error as error:
             print(f"SQLite error occurred: {error}")
@@ -55,24 +54,37 @@ class DBConnection:
         along with similarity score.        
         """
         self.CURSOR.execute("SELECT data_string, article_title, label_id FROM article_data")
-        db_strings = self.CURSOR.fetchall() 
+        db_strings = self.CURSOR.fetchall()
         most_similar_string = None
         highest_similarity = 0
+        id_of_most_similar = None
         for row in db_strings:
             article_string = row['data_string']
-            label_id = int(row['label_id'])
+            label_id = row['label_id']
             current_similarity = get_similarity(string_to_compare, article_string)
             if current_similarity >= min_score and current_similarity > highest_similarity:
                 highest_similarity = current_similarity
                 most_similar_string = article_string
-        return {"most_similar_string": most_similar_string, "similarity": highest_similarity, "label_id": label_id}
-            
+                id_of_most_similar = label_id
+        return {"most_similar_string": most_similar_string, "similarity": highest_similarity, "label_id": id_of_most_similar}
 
-    def delete_data(self):
-        os.remove("./temp.db")
 
-    
+    def retreive_all(self):
+        self.CURSOR.execute("SELECT data_string, article_title, label_id FROM article_data")
+        data = self.CURSOR.fetchall()
+        output = []
+        for row in data:
+            output.append(row['article_title'])
+            output.append(row['label_id'])
+        return output
+
     def close_connection(self):
         if self.CONNECTION:
             self.CONNECTION.close()
         print("Connection closed")
+
+
+my_db = DBConnection()
+my_db.insert_data("title",["string1", "string2", "string3"],4151)
+sims = my_db.retreive_most_similar(70,"strin2")
+print(sims)
