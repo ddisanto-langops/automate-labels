@@ -196,7 +196,12 @@ def label_request():
                 logging.info(f"Assigned label {comparison_labelId} to string ID: {string_id}")
             
             else:
-                logging.info("No match found. Continuing...") 
+                crowdin_client.labels.assign_label_to_strings(
+                    labelId=uncategorized_id,
+                    stringIds=[string_id],
+                    projectId=comment.project_id
+                )
+                logging.info("No match found; labeled as 'Uncategorized'.")
 
     except Exception as e:
         # Log the full exception and traceback for debugging
