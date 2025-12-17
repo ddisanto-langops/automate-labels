@@ -160,26 +160,16 @@ def label_request():
             string_unescaped = unescape(string['source'])
             string_stripped = utils.strip_html_tags(string_unescaped)
             string_normalized = utils.normalize_text(string_stripped)
-
-            # If string matches one of the article titles, label it
-            if string_normalized == article_title_normalized:
+           
+            comparison = database.retreive_most_similar(50, string_normalized)
+            if comparison['similarity'] >= SIMILARITY_THRESHOLD:
                 crowdin_client.labels.assign_label_to_strings(
-                    labelId=label_id,
-                    stringIds=[string_id],
-                    projectId=comment.project_id
-                )
+                labelId=comparison['label_id'],
+                stringIds=[string_id],
+                projectId=comment.project_id
+            )
                 logging.info(f"Assigned label {label_id} to string ID: {string_id}")
-                continue
-            elif string_normalized != article_title_normalized:
-                # Compare and get similarity
-                comparison = database.retreive_most_similar(50, string_normalized)
-                if comparison['similarity'] >= SIMILARITY_THRESHOLD:
-                    crowdin_client.labels.assign_label_to_strings(
-                    labelId=label_id,
-                    stringIds=[string_id],
-                    projectId=comment.project_id
-                )
-                logging.info(f"Assigned label {label_id} to string ID: {string_id}")
+            
             else:
                 logging.info("No match found. Continuing...")    
 

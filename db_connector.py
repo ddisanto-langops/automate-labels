@@ -60,7 +60,7 @@ class DBConnection:
         highest_similarity = 0
         for row in db_strings:
             article_string = row['data_string']
-            label_id = row['label_id']
+            label_id = int(row['label_id'])
             current_similarity = get_similarity(string_to_compare, article_string)
             if current_similarity >= min_score and current_similarity > highest_similarity:
                 highest_similarity = current_similarity
