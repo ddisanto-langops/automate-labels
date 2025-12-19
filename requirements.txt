@@ -5,3 +5,4 @@ dotenv
 requests
 rapidfuzz
 crowdin-api-client
+dependency-injector

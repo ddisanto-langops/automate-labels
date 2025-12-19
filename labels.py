@@ -1,14 +1,8 @@
-import os
-from crowdin_api import CrowdinClient
-
-crowdin_client = CrowdinClient(token=os.environ.get("CROWDIN_API_KEY"))
-
 class CrowdinLabels:
     """
-    CrowdinLabels represents a list_labels request via Crowdin API 
-    and provides methods for clean handling of output.
+    Requires CrowdinClient from crowdin_api.
     """
-    def __init__(self, project_id: int):
+    def __init__(self, crowdin_client, project_id: int):
         try:
             labels_request = crowdin_client.labels.list_labels(projectId=project_id)
         except Exception as e:

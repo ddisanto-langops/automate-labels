@@ -1,13 +1,13 @@
 import os
 import sqlite3
-from fuzzy_match import get_similarity
 
 class DBConnection:
     """
     Class DBConnection represents a connection to a local sqlite database.
     """
-    def __init__(self):
+    def __init__(self, get_similarity):
         try:
+            self.get_similarity = get_similarity
             self.APP_FOLDER = os.path.dirname(os.path.abspath(__file__)) # Gets the directory of the current script
             self.CONNECTION = sqlite3.connect(":memory:")
             self.CONNECTION.row_factory = sqlite3.Row
@@ -46,6 +46,17 @@ class DBConnection:
             # 5. Rollback on error
             self.CONNECTION.rollback()
             print(f"An error occurred during insertion. Transaction rolled back: {e}")
+
+    def get_similarity(rapidfuzz, string1: str, string2: str) -> float:
+        """
+        Calculate text similarity using fuzzy matching for times when strings are not identical.
+        
+        :param string1: string of XLIFF document (will be transformed to lowercase if not already)
+        :param string2: string from SQlite database (will be transformed to lowercase if not already)
+        """
+        score = rapidfuzz.ratio(string1.lower(), string2.lower())
+
+        return score
     
     
     def retreive_most_similar(self, min_score: int, string_to_compare: str) -> dict:
@@ -61,7 +72,7 @@ class DBConnection:
         for row in db_strings:
             article_string = row['data_string']
             label_id = row['label_id']
-            current_similarity = get_similarity(string_to_compare, article_string)
+            current_similarity = self.get_similarity(string_to_compare, article_string)
             if current_similarity >= min_score and current_similarity > highest_similarity:
                 highest_similarity = current_similarity
                 most_similar_string = article_string
