@@ -42,8 +42,8 @@ def label_request():
     Processes the request to add labels based on comments containing "#label".
     Always returns a 200 OK status.
     """
-
-    logging.info("--- New Webhook Received ---")
+    
+    logging.info("--- New Webhook Received ---") 
 
     # Delete the temporary database when function is called
     try:
@@ -51,7 +51,7 @@ def label_request():
     except Exception:
         logging.error("Failed to connect to in-memory database.")
         return jsonify({"message": "Failed to connect to in-memory database"}), 200
-
+    
     # Check for JSON payload
     if not request.json:
         logging.error("Received request with no JSON payload.")
@@ -59,13 +59,13 @@ def label_request():
 
     try:
         webhook = request.get_json(silent=True)
-
+        
         # Immediate check for null payload
         if webhook is None:
             logging.error("JSON payload is None after get_json(). Check Content-Type header.")
             return jsonify({"message": "JSON payload is null"}), 400
 
-        # init the string comment class and read data from webhook
+        # init the string comment class and read data from webhook    
         comment = StringCommentWebhook()
         comment.read(webhook)
 
@@ -77,7 +77,7 @@ def label_request():
             return jsonify({"message": "OK, skipped processing (no #label found)"}), 200
         else:
             logging.info(f"Request received from user: {comment.full_name} (user {comment.username}))")
-
+        
         logging.info("Processing request with #label...")
 
         # --- DIAGNOSTIC LOGGING ---
@@ -92,7 +92,7 @@ def label_request():
              logging.error("Crowdin Client not initialized. Cannot perform API calls.")
              # Still return 200 OK since the webhook was received
              return jsonify({"message": "Crowdin API initialization failed."}), 200
-
+             
         try:
             export_file = crowdin_client.translations.export_project_translation(
                 targetLanguageId=comment.target_lang_id,
@@ -104,7 +104,7 @@ def label_request():
             logging.error(f"Validation Error details: {ve.detail}")
             logging.info("--- Webhook processing terminated due to Crowdin API ValidationError. ---")
             return jsonify({"message": "Crowdin API failed during file build/export (Check server logs)."}), 200
-
+        
         url = export_file['data']['url']
         download_path = os.path.join(os.getcwd(), "temp.xliff")
         utils.download_file(url, download_path)
@@ -132,7 +132,7 @@ def label_request():
             current_label_titles = crowdin_labels.get_label_titles()
             current_label_ids = crowdin_labels.get_label_ids()
             uncategorized_exists = crowdin_labels.check_for_uncategorized(current_label_titles)
-
+            
             # get its ID and store as uncategorized_label_id
             if uncategorized_exists == True:
                 label_index = current_label_titles.index("Uncategorized")
@@ -156,7 +156,7 @@ def label_request():
             if article_title_sanitized in current_label_titles:
                 logging.error(f"Error: Label with this title already exists. Exiting.")
                 return jsonify({"message": "Label exists."}), 200
-            else:
+            else:   
                 # Add the title as a label to relevant Crowdin project:
                 add_label_req = crowdin_client.labels.add_label(
                 title=article_title_sanitized,
@@ -164,7 +164,7 @@ def label_request():
                 )
                 label_id = add_label_req['data']['id']
                 logging.info(f"Created new label with ID: {label_id} and Title: {article_title_sanitized}")
-
+            
             # Scrape and normalize content
             unsanitized_contents = scraper.get_segmented_content(url)
             article_contents = []
@@ -174,8 +174,8 @@ def label_request():
 
             # Insert title with strings into linked database
             database.insert_data(article_title_normalized, article_contents, label_id)
-
-
+                  
+        
         for string in xliff_contents:
 
             # Get id, then clean up the string
@@ -183,7 +183,7 @@ def label_request():
             string_unescaped = unescape(string['source'])
             string_stripped = utils.strip_html_tags(string_unescaped)
             string_normalized = utils.normalize_text(string_stripped)
-
+           
             comparison = database.retreive_most_similar(SIMILARITY_THRESHOLD, string_normalized)
             comparison_similarity = comparison["similarity"]
             comparison_labelId = comparison["label_id"]
@@ -194,7 +194,7 @@ def label_request():
                 projectId=comment.project_id
             )
                 logging.info(f"Assigned label {comparison_labelId} to string ID: {string_id}")
-
+            
             else:
                 crowdin_client.labels.assign_label_to_strings(
                     labelId=uncategorized_id,
@@ -206,13 +206,13 @@ def label_request():
     except Exception as e:
         # Log the full exception and traceback for debugging
         logging.error(f"An error occurred during processing: {e}", exc_info=True)
-
+    
     try:
         if database:
             database.close_connection()
     except Exception as e:
         logging.info("Failed to close database.")
-
+        
     # CRITICAL: Always return a Flask Response object, even on success/error in processing
     logging.info("--- Webhook processing complete. Returning 200 OK. ---")
     return jsonify({}), 200
