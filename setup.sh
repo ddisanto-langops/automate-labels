@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VENV_DIR=".labeler-venv"
+VENV_DIR="labeler-venv"
 
 echo "Make sure you run this code from inside your app folder, where the venv should be created. Press 'y' to begin, or any other key to quit: "
 read proceed
