@@ -10,6 +10,7 @@ from webhook import StringCommentWebhook
 from xliff import XLIFF
 from db_connector import DBConnection
 from utils import Utils
+from wrappers import require_x_auth
 
 # --- Setup and Initialization ---
 SIMILARITY_THRESHOLD = 70
@@ -36,6 +37,7 @@ except Exception as e:
 
 
 @app.route('/', methods=['POST'])
+@require_x_auth
 def label_request():
     """
     Handles incoming Crowdin webhook requests.
@@ -216,7 +218,3 @@ def label_request():
     # CRITICAL: Always return a Flask Response object, even on success/error in processing
     logging.info("--- Webhook processing complete. Returning 200 OK. ---")
     return jsonify({}), 200
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002)
