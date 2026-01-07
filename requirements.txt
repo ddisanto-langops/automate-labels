@@ -1,6 +1,7 @@
 bs4
 spacy
 flask
+gunicorn
 dotenv
 requests
 rapidfuzz
