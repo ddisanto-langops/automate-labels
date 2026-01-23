@@ -4,9 +4,6 @@ Eliminate the need to manually label PT strings with their corresponding article
 # Implementation
 This app allows for strings in any file on Crowdin to automatically be labeled according to the articles contained in the magazine. The current implementation uses a web scraper to populate a database with article title and strings. A comparison is then made between the XLIFF strings and the database. Matches which exceed a given threshold are labeled with the corresponding article title via the Crowdin API.
 
-# Authorization  
-Crowdin webhooks must send 'X-Auth' header.
-
 # Deployment
 Deployment on Ubuntu can be accelerated via run deploy_setup.sh, which automatically creates a virtual environment and installs Python packages and their dependencies. Gunicorn service file and Nginx config must be manually added according to the server's individual requirements.
 
