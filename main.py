@@ -10,7 +10,6 @@ from webhook import StringCommentWebhook
 from xliff import XLIFF
 from db_connector import DBConnection
 from utils import Utils
-from wrappers import require_x_auth
 
 # --- Setup and Initialization ---
 SIMILARITY_THRESHOLD = 70
@@ -37,7 +36,6 @@ except Exception as e:
 
 
 @app.route('/', methods=['POST'])
-@require_x_auth
 def label_request():
     """
     Handles incoming Crowdin webhook requests.
