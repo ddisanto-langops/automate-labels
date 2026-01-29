@@ -61,7 +61,7 @@ def label_request():
         webhook = request.get_json(silent=True)
         
         # Immediate check for null payload
-        if webhook is None:
+        if not webhook:
             logging.error("JSON payload is None after get_json(). Check Content-Type header.")
             return jsonify({"message": "JSON payload is null"}), 400
 
@@ -123,29 +123,27 @@ def label_request():
         # Make a request to list existing labels via CrowdinLabels
         crowdin_labels = CrowdinLabels(comment.project_id)
 
+        # Check for label 'Uncategorized' and create if needed
+        # if exists, get its ID
+        current_label_titles = crowdin_labels.get_label_titles()
+        current_label_ids = crowdin_labels.get_label_ids()
+        uncategorized_exists = crowdin_labels.check_for_uncategorized(current_label_titles)
+        
+        # get its ID and store as uncategorized_label_id
+        if uncategorized_exists:
+            label_index = current_label_titles.index("Uncategorized")
+            uncategorized_id = current_label_ids[label_index]
+
+        else:
+            # create it
+            add_uncategorized = crowdin_client.labels.add_label(
+                title="Uncategorized",
+                projectId=comment.project_id
+            )
+            uncategorized_id = add_uncategorized['data']['id']
+
         for url in urls:
             logging.info(f"Processing URL: {url}")
-
-
-            # Check for label 'Uncategorized' and create if needed
-            # if exists, get its ID
-            current_label_titles = crowdin_labels.get_label_titles()
-            current_label_ids = crowdin_labels.get_label_ids()
-            uncategorized_exists = crowdin_labels.check_for_uncategorized(current_label_titles)
-            
-            # get its ID and store as uncategorized_label_id
-            if uncategorized_exists == True:
-                label_index = current_label_titles.index("Uncategorized")
-                uncategorized_id = current_label_ids[label_index]
-
-            else:
-                # create it
-                add_uncategorized = crowdin_client.labels.add_label(
-                    title="Uncategorized",
-                    projectId=comment.project_id
-                )
-                uncategorized_id = add_uncategorized['data']['id']
-
 
             # Scrape, sanitize and normalize title
             unsanitized_title = scraper.get_title(url)
@@ -155,7 +153,7 @@ def label_request():
             # Check for existing label. Crowdin cannot apply the same label to strings more than once, so exit with error.
             if article_title_sanitized in current_label_titles:
                 logging.error(f"Error: Label with this title already exists. Exiting.")
-                return jsonify({"message": "Label exists."}), 200
+                return jsonify({"message": f"Label `{article_title_sanitized}` exists."}), 200
             else:   
                 # Add the title as a label to relevant Crowdin project:
                 add_label_req = crowdin_client.labels.add_label(
