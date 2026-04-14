@@ -175,9 +175,8 @@ def label_request():
 			# Insert title with strings into linked database
 			database.insert_data(article_title_normalized, article_contents, label_id)
 				  
-		
+		uncategorized_count = 0
 		for string in xliff_contents:
-			uncategorized_count = 0
 			# Get id, then clean up the string
 			string_id = int(string['id'])
 			string_unescaped = unescape(string['source'])
