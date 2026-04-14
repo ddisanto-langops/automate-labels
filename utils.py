@@ -45,8 +45,8 @@ class Utils:
 				str.maketrans('', '', string.punctuation)
 			)
 
-		# Replace multiple whitespace characters with a single space
-		normalized = re.sub(r'\s', '', normalized)
+		# Collapse multiple whitespace characters into a single space
+		normalized = re.sub(r'\s+', ' ', normalized)
 
 		# Strip leading/trailing whitespace
 		normalized = normalized.strip()
