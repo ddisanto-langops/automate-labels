@@ -177,7 +177,7 @@ def label_request():
 				  
 		
 		for string in xliff_contents:
-
+			uncategorized_count = 0
 			# Get id, then clean up the string
 			string_id = int(string['id'])
 			string_unescaped = unescape(string['source'])
@@ -201,6 +201,7 @@ def label_request():
 					stringIds=[string_id],
 					projectId=comment.project_id
 				)
+				uncategorized_count += 1
 				logging.info("No match found; labeled as 'Uncategorized'.")
 
 	except Exception as e:
@@ -214,5 +215,13 @@ def label_request():
 		logging.info("Failed to close database.")
 		
 	# CRITICAL: Always return a Flask Response object, even on success/error in processing
-	logging.info("--- Webhook processing complete. Returning 200 OK. ---")
+	logging.info(f"""
+		--- Webhook processing complete. Returning 200 OK. ---
+		--- Summary of processing: ---
+		Total strings from XLIFF: {len(xliff_contents)}
+		Similarity Threshold: {SIMILARITY_THRESHOLD}
+		Total uncategorized strings: {uncategorized_count}
+		------------------------------------------------------
+		"""
+	)
 	return jsonify({}), 200
